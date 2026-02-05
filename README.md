@@ -1,6 +1,6 @@
 # PMBus Power Supply API
 
-OpenAPI specification for interfacing with PMBus-compliant power supplies.
+API specification for interfacing with PMBus-compliant power supplies.
 
 ## Files
 
@@ -28,25 +28,29 @@ npx serve
 
 Open the URL shown in the terminal (usually http://localhost:3000/docs.html)
 
-### Option 3: PHP
+## Commands
 
-```bash
-php -S localhost:8000
+| Command | Method | Description |
+|---------|--------|-------------|
+| `psu_info` | GET | Device identification |
+| `psu_register_{name}` | GET/PUT | Read/write any register by name |
+| `psu_control_power` | GET/PUT | Enable/disable PSU output |
+| `psu_control_clear_faults` | POST | Clear fault flags |
+| `psu_control_fan` | GET/PUT | Fan enable and speed |
+| `psu_control_voltage` | GET/PUT | Output voltage setpoint |
+| `psu_monitoring` | GET | All sensor readings |
+| `psu_monitoring_input` | GET | Input voltage, current, power |
+| `psu_monitoring_output` | GET | Output voltage, current, power |
+| `psu_monitoring_temperature` | GET | Temperature readings |
+| `psu_monitoring_fan` | GET | Fan speed (RPM) |
+| `psu_status` | GET | All fault/warning flags |
+| `psu_status_summary` | GET | Quick health check |
+| `psu_config_limits` | GET/PUT | Warning/fault thresholds |
+
+## Example Usage
+
 ```
-
-Open http://localhost:8000/docs.html
-
-## API Overview
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/info` | GET | Device identification |
-| `/register/{name}` | GET/PUT | Read/write any register |
-| `/control/power` | GET/PUT | Enable/disable PSU output |
-| `/control/clear-faults` | POST | Clear fault flags |
-| `/control/fan` | GET/PUT | Fan enable and speed |
-| `/control/voltage` | GET/PUT | Output voltage setpoint |
-| `/monitoring` | GET | All sensor readings |
-| `/status` | GET | All fault/warning flags |
-| `/status/summary` | GET | Quick health check |
-| `/config/limits` | GET/PUT | Warning/fault thresholds |
+http://{host}:{port}/api?command=psu_info
+http://{host}:{port}/api?command=psu_monitoring
+http://{host}:{port}/api?command=psu_register_vin
+```
