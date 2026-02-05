@@ -4,7 +4,20 @@ info:
   description: |
     API for interfacing with a PMBus-compliant power supply unit.
 
+    ## General
+
+    It was easier for me to write this up as a REST API, but I appreciate our miner has specific commands isntead of endpoints.
+    Effectively, my intent is to covert these endpoints to `psu_`.
+    ```
+    /info                 -> psu_info
+    /control/power        -> psu_control_power
+    etc
+    ```
+
+
     ## Data Formats
+
+    Data formats are for informational purposes only.  The miner will handle conversions.
 
     ### Linear11 Format
     Used for most sensor readings (vin, iin, iout, temperatures, power).
@@ -22,11 +35,19 @@ info:
     The exponent is obtained from VOUT_MODE register bits [4:0] (signed).
   version: 1.0.0
   license:
-    name: MIT
+    name: gb
 
 servers:
-  - url: http://localhost:8080/api/v1
+  - url: "{protocol}://{host}:{port}/api?command="
     description: PMBus controller
+    variables:
+      protocol:
+        default: http
+        enum: [http, https]
+      host:
+        default: localhost
+      port:
+        default: "8080"
 
 tags:
   - name: Info
