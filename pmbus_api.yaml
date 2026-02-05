@@ -1,0 +1,539 @@
+openapi: 3.1.0
+info:
+  title: PMBus Power Supply API
+  description: |
+    API for interfacing with a PMBus-compliant power supply unit.
+
+    ## Data Formats
+
+    ### Linear11 Format
+    Used for most sensor readings (vin, iin, iout, temperatures, power).
+    ```
+    value = mantissa * 2^exponent
+    mantissa = raw_val[10:0]  // 11-bit unsigned
+    exponent = raw_val[15:11] // 5-bit signed
+    ```
+
+    ### Linear16 Format (VOUT_MODE)
+    Used for voltage output readings.
+    ```
+    value = raw_val * 2^exponent
+    ```
+    The exponent is obtained from VOUT_MODE register bits [4:0] (signed).
+  version: 1.0.0
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: PMBus controller
+
+tags:
+  - name: Info
+    description: Device information
+  - name: Control
+    description: Power supply control
+  - name: Monitoring
+    description: Real-time readings
+  - name: Status
+    description: Faults and warnings
+  - name: Config
+    description: Limits and settings
+
+paths:
+  /info:
+    get:
+      tags: [Info]
+      summary: Get device information
+      operationId: getInfo
+      responses:
+        '200':
+          description: Device info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceInfo'
+
+  /register/{name}:
+    parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Register name (e.g., vin, vout, status_byte)
+    get:
+      tags: [Info]
+      summary: Read any register by name
+      operationId: readRegister
+      responses:
+        '200':
+          description: Register value
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterValue'
+    put:
+      tags: [Config]
+      summary: Write to a register
+      operationId: writeRegister
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  oneOf:
+                    - type: integer
+                    - type: number
+                    - type: string
+      responses:
+        '200':
+          description: Written successfully
+        '403':
+          description: Register is read-only
+
+  /control/power:
+    get:
+      tags: [Control]
+      summary: Get power state
+      operationId: getPower
+      responses:
+        '200':
+          description: Power state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+    put:
+      tags: [Control]
+      summary: Enable or disable power output
+      operationId: setPower
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enabled]
+              properties:
+                enabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Power state updated
+
+  /control/clear-faults:
+    post:
+      tags: [Control]
+      summary: Clear all faults
+      operationId: clearFaults
+      responses:
+        '200':
+          description: Faults cleared
+
+  /control/fan:
+    get:
+      tags: [Control]
+      summary: Get fan settings
+      operationId: getFan
+      responses:
+        '200':
+          description: Fan settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FanControl'
+    put:
+      tags: [Control]
+      summary: Set fan settings
+      operationId: setFan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FanControl'
+      responses:
+        '200':
+          description: Fan updated
+
+  /control/voltage:
+    get:
+      tags: [Control]
+      summary: Get output voltage setpoint
+      operationId: getVoltage
+      responses:
+        '200':
+          description: Voltage setpoint
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  voltage_v:
+                    type: number
+                  raw_value:
+                    type: integer
+    put:
+      tags: [Control]
+      summary: Set output voltage
+      operationId: setVoltage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [voltage_v]
+              properties:
+                voltage_v:
+                  type: number
+      responses:
+        '200':
+          description: Voltage updated
+
+  /monitoring:
+    get:
+      tags: [Monitoring]
+      summary: Get all sensor readings
+      operationId: getAll
+      responses:
+        '200':
+          description: All readings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllReadings'
+
+  /monitoring/input:
+    get:
+      tags: [Monitoring]
+      summary: Get input measurements (VIN, IIN, PIN)
+      operationId: getInput
+      responses:
+        '200':
+          description: Input readings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InputReadings'
+
+  /monitoring/output:
+    get:
+      tags: [Monitoring]
+      summary: Get output measurements (VOUT, IOUT, POUT)
+      operationId: getOutput
+      responses:
+        '200':
+          description: Output readings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutputReadings'
+
+  /monitoring/temperature:
+    get:
+      tags: [Monitoring]
+      summary: Get temperature readings
+      operationId: getTemperature
+      responses:
+        '200':
+          description: Temperature readings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemperatureReadings'
+
+  /monitoring/fan:
+    get:
+      tags: [Monitoring]
+      summary: Get fan speed
+      operationId: getFanSpeed
+      responses:
+        '200':
+          description: Fan speed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rpm:
+                    type: number
+
+  /status:
+    get:
+      tags: [Status]
+      summary: Get all status flags
+      operationId: getStatus
+      responses:
+        '200':
+          description: All status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllStatus'
+
+  /status/summary:
+    get:
+      tags: [Status]
+      summary: Get status summary (any faults?)
+      operationId: getStatusSummary
+      responses:
+        '200':
+          description: Status summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: True if no faults
+                  powered:
+                    type: boolean
+                  faults:
+                    type: array
+                    items:
+                      type: string
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+
+  /config/limits:
+    get:
+      tags: [Config]
+      summary: Get all configurable limits
+      operationId: getLimits
+      responses:
+        '200':
+          description: Limits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Limits'
+    put:
+      tags: [Config]
+      summary: Set limits
+      operationId: setLimits
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Limits'
+      responses:
+        '200':
+          description: Limits updated
+
+components:
+  schemas:
+    DeviceInfo:
+      type: object
+      properties:
+        manufacturer:
+          type: string
+          example: GOSPOWER
+        model:
+          type: string
+          example: P222C
+        serial_number:
+          type: string
+        revision:
+          type: string
+        date:
+          type: string
+        location:
+          type: string
+        pmbus_revision:
+          type: string
+          example: "1.3"
+        sw_version_1:
+          type: string
+        sw_version_2:
+          type: string
+
+    RegisterValue:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+          example: "0x88"
+        raw:
+          type: integer
+        value:
+          oneOf:
+            - type: number
+            - type: string
+            - type: boolean
+        unit:
+          type: string
+          example: V
+
+    FanControl:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        speed_rpm:
+          type: number
+
+    InputReadings:
+      type: object
+      properties:
+        vin_v:
+          type: number
+          description: Input voltage
+        iin_a:
+          type: number
+          description: Input current
+        pin_w:
+          type: number
+          description: Input power
+
+    OutputReadings:
+      type: object
+      properties:
+        vout_v:
+          type: number
+          description: Output voltage
+        iout_a:
+          type: number
+          description: Output current
+        pout_w:
+          type: number
+          description: Output power
+
+    TemperatureReadings:
+      type: object
+      properties:
+        temp0_c:
+          type: number
+        temp1_c:
+          type: number
+        temp2_c:
+          type: number
+
+    AllReadings:
+      type: object
+      properties:
+        vin_v:
+          type: number
+        iin_a:
+          type: number
+        pin_w:
+          type: number
+        vout_v:
+          type: number
+        iout_a:
+          type: number
+        pout_w:
+          type: number
+        temp0_c:
+          type: number
+        temp1_c:
+          type: number
+        temp2_c:
+          type: number
+        fan_rpm:
+          type: number
+
+    AllStatus:
+      type: object
+      properties:
+        powered:
+          type: boolean
+        vout:
+          $ref: '#/components/schemas/StatusVout'
+        iout:
+          $ref: '#/components/schemas/StatusIout'
+        input:
+          $ref: '#/components/schemas/StatusInput'
+        temperature:
+          $ref: '#/components/schemas/StatusTemp'
+        fan:
+          $ref: '#/components/schemas/StatusFan'
+
+    StatusVout:
+      type: object
+      properties:
+        ov_fault:
+          type: boolean
+        ov_warning:
+          type: boolean
+        uv_warning:
+          type: boolean
+        uv_fault:
+          type: boolean
+
+    StatusIout:
+      type: object
+      properties:
+        oc_fault:
+          type: boolean
+        oc_warning:
+          type: boolean
+
+    StatusInput:
+      type: object
+      properties:
+        vin_ov_fault:
+          type: boolean
+        vin_ov_warning:
+          type: boolean
+        vin_uv_warning:
+          type: boolean
+        vin_uv_fault:
+          type: boolean
+        iin_oc_warning:
+          type: boolean
+        pin_op_warning:
+          type: boolean
+
+    StatusTemp:
+      type: object
+      properties:
+        ot_fault:
+          type: boolean
+        ot_warning:
+          type: boolean
+
+    StatusFan:
+      type: object
+      properties:
+        fault:
+          type: boolean
+        warning:
+          type: boolean
+
+    Limits:
+      type: object
+      properties:
+        vout_uv_warn_v:
+          type: number
+        vout_uv_fault_v:
+          type: number
+        iout_oc_fault_a:
+          type: number
+        iout_oc_warn_a:
+          type: number
+        ot_fault_c:
+          type: number
+        ot_warn_c:
+          type: number
+        vin_ov_warn_v:
+          type: number
+        vin_uv_warn_v:
+          type: number
+        iin_oc_warn_a:
+          type: number
+        pin_op_warn_w:
+          type: number
