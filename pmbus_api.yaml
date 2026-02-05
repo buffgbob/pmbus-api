@@ -6,7 +6,7 @@ info:
 
     ## General
 
-    It was easier for me to write this up as a REST API, but I appreciate our miner has specific commands instead of endpoints.
+    It was easier for me to write this up as a REST API, but I appreciate our miner has specific commands instead of endpoints.  It's a little ugly that all the endpoints start with `api?command=` but this will allow me to test properly.
 
     ## Data Formats
 
@@ -31,7 +31,7 @@ info:
     name: gb
 
 servers:
-  - url: "http://{host}:{port}/api?command="
+  - url: "http://{host}:{port}"
     description: PMBus controller
     variables:
       host:
@@ -52,7 +52,7 @@ tags:
     description: Limits and settings
 
 paths:
-  psu_info:
+  /api?command=psu_info:
     get:
       tags: [Info]
       summary: Get device information
@@ -65,7 +65,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeviceInfo'
 
-  psu_register_{name}:
+  /api?command=psu_register_{name}:
     parameters:
       - name: name
         in: path
@@ -106,7 +106,7 @@ paths:
         '403':
           description: Register is read-only
 
-  psu_control_power:
+  /api?command=psu_control_power:
     get:
       tags: [Control]
       summary: Get power state
@@ -139,7 +139,7 @@ paths:
         '200':
           description: Power state updated
 
-  psu_control_clear_faults:
+  /api?command=psu_control_clear_faults:
     post:
       tags: [Control]
       summary: Clear all faults
@@ -148,7 +148,7 @@ paths:
         '200':
           description: Faults cleared
 
-  psu_control_fan:
+  /api?command=psu_control_fan:
     get:
       tags: [Control]
       summary: Get fan settings
@@ -174,7 +174,7 @@ paths:
         '200':
           description: Fan updated
 
-  psu_control_voltage:
+  /api?command=psu_control_voltage:
     get:
       tags: [Control]
       summary: Get output voltage setpoint
@@ -209,7 +209,7 @@ paths:
         '200':
           description: Voltage updated
 
-  psu_monitoring:
+  /api?command=psu_monitoring:
     get:
       tags: [Monitoring]
       summary: Get all sensor readings
@@ -222,7 +222,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AllReadings'
 
-  psu_monitoring_input:
+  /api?command=psu_monitoring_input:
     get:
       tags: [Monitoring]
       summary: Get input measurements (VIN, IIN, PIN)
@@ -235,7 +235,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InputReadings'
 
-  psu_monitoring_output:
+  /api?command=psu_monitoring_output:
     get:
       tags: [Monitoring]
       summary: Get output measurements (VOUT, IOUT, POUT)
@@ -248,7 +248,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/OutputReadings'
 
-  psu_monitoring_temperature:
+  /api?command=psu_monitoring_temperature:
     get:
       tags: [Monitoring]
       summary: Get temperature readings
@@ -261,7 +261,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TemperatureReadings'
 
-  psu_monitoring_fan:
+  /api?command=psu_monitoring_fan:
     get:
       tags: [Monitoring]
       summary: Get fan speed
@@ -277,7 +277,7 @@ paths:
                   rpm:
                     type: number
 
-  psu_status:
+  /api?command=psu_status:
     get:
       tags: [Status]
       summary: Get all status flags
@@ -290,7 +290,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AllStatus'
 
-  psu_status_summary:
+  /api?command=psu_status_summary:
     get:
       tags: [Status]
       summary: Get status summary (any faults?)
@@ -317,7 +317,7 @@ paths:
                     items:
                       type: string
 
-  psu_config_limits:
+  /api?command=psu_config_limits:
     get:
       tags: [Config]
       summary: Get all configurable limits
