@@ -65,79 +65,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeviceInfo'
 
-  /api?command=psu_register_{name}:
-    parameters:
-      - name: name
-        in: path
-        required: true
-        schema:
-          type: string
-        description: Register name (e.g., vin, vout, status_byte)
-    get:
-      tags: [Info]
-      summary: Read any register by name
-      operationId: readRegister
-      responses:
-        '200':
-          description: Register value
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RegisterValue'
-    put:
-      tags: [Config]
-      summary: Write to a register
-      operationId: writeRegister
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                value:
-                  oneOf:
-                    - type: integer
-                    - type: number
-                    - type: string
-      responses:
-        '200':
-          description: Written successfully
-        '403':
-          description: Register is read-only
 
-  /api?command=psu_control_power:
-    get:
-      tags: [Control]
-      summary: Get power state
-      operationId: getPower
-      responses:
-        '200':
-          description: Power state
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  enabled:
-                    type: boolean
-    put:
-      tags: [Control]
-      summary: Enable or disable power output
-      operationId: setPower
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [enabled]
-              properties:
-                enabled:
-                  type: boolean
-      responses:
-        '200':
-          description: Power state updated
 
   /api?command=psu_control_clear_faults:
     post:
@@ -174,40 +102,6 @@ paths:
         '200':
           description: Fan updated
 
-  /api?command=psu_control_voltage:
-    get:
-      tags: [Control]
-      summary: Get output voltage setpoint
-      operationId: getVoltage
-      responses:
-        '200':
-          description: Voltage setpoint
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  voltage_v:
-                    type: number
-                  raw_value:
-                    type: integer
-    put:
-      tags: [Control]
-      summary: Set output voltage
-      operationId: setVoltage
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [voltage_v]
-              properties:
-                voltage_v:
-                  type: number
-      responses:
-        '200':
-          description: Voltage updated
 
   /api?command=psu_monitoring:
     get:
@@ -222,60 +116,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/AllReadings'
 
-  /api?command=psu_monitoring_input:
-    get:
-      tags: [Monitoring]
-      summary: Get input measurements (VIN, IIN, PIN)
-      operationId: getInput
-      responses:
-        '200':
-          description: Input readings
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InputReadings'
-
-  /api?command=psu_monitoring_output:
-    get:
-      tags: [Monitoring]
-      summary: Get output measurements (VOUT, IOUT, POUT)
-      operationId: getOutput
-      responses:
-        '200':
-          description: Output readings
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OutputReadings'
-
-  /api?command=psu_monitoring_temperature:
-    get:
-      tags: [Monitoring]
-      summary: Get temperature readings
-      operationId: getTemperature
-      responses:
-        '200':
-          description: Temperature readings
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TemperatureReadings'
-
-  /api?command=psu_monitoring_fan:
-    get:
-      tags: [Monitoring]
-      summary: Get fan speed
-      operationId: getFanSpeed
-      responses:
-        '200':
-          description: Fan speed
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  rpm:
-                    type: number
 
   /api?command=psu_status:
     get:
@@ -290,32 +130,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/AllStatus'
 
-  /api?command=psu_status_summary:
-    get:
-      tags: [Status]
-      summary: Get status summary (any faults?)
-      operationId: getStatusSummary
-      responses:
-        '200':
-          description: Status summary
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  ok:
-                    type: boolean
-                    description: True if no faults
-                  powered:
-                    type: boolean
-                  faults:
-                    type: array
-                    items:
-                      type: string
-                  warnings:
-                    type: array
-                    items:
-                      type: string
 
   /api?command=psu_config_limits:
     get:
